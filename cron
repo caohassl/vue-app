@@ -1,0 +1,157 @@
+package com.linked.me.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @author caomr
+ */
+@Slf4j
+@Component
+public class CronService {
+
+
+    private static AtomicInteger configPos = new AtomicInteger(0);
+    private static List<String> configList = new ArrayList<>();
+
+    static {
+//        configList.add("link_deep0_19.conf");
+//
+//        configList.add("link_deep1_16.conf");
+//        configList.add("link_deep1_17.conf");
+//        configList.add("link_deep1_18.conf");
+//        configList.add("link_deep1_19.conf");
+//
+//        configList.add("link_deep2_16.conf");
+//        configList.add("link_deep2_17.conf");
+//        configList.add("link_deep2_18.conf");
+//        configList.add("link_deep2_19.conf");
+//
+//        configList.add("link_deep3_16.conf");
+//        configList.add("link_deep3_17.conf");
+//        configList.add("link_deep3_18.conf");
+//        configList.add("link_deep3_19.conf");
+//
+//        configList.add("link_deep4_16.conf");
+//        configList.add("link_deep4_17.conf");
+//        configList.add("link_deep4_18.conf");
+//        configList.add("link_deep4_19.conf");
+//
+//        configList.add("link_deep5_16.conf");
+//        configList.add("link_deep5_17.conf");
+//        configList.add("link_deep5_18.conf");
+//        configList.add("link_deep5_19.conf");
+//
+//        configList.add("link_deep6_16.conf");
+//        configList.add("link_deep6_17.conf");
+//        configList.add("link_deep6_18.conf");
+//        configList.add("link_deep6_19.conf");
+//
+//        configList.add("link_deep7_16.conf");
+//        configList.add("link_deep7_17.conf");
+//        configList.add("link_deep7_18.conf");
+//        configList.add("link_deep7_19.conf");
+//
+//        configList.add("link_deep8_16.conf");
+//        configList.add("link_deep8_17.conf");
+//        configList.add("link_deep8_18.conf");
+//        configList.add("link_deep8_19.conf");
+
+//        configList.add("link_deep9_16.conf");
+//        configList.add("link_deep9_17.conf");
+//        configList.add("link_deep9_18.conf");
+
+        /**
+         * 表太大 1909，1910
+         */
+//        configList.add("link_deep9_19.conf");
+
+        configList.add("link_deep10_16.conf");
+        configList.add("link_deep10_17.conf");
+        configList.add("link_deep10_18.conf");
+        configList.add("link_deep10_19.conf");
+
+        configList.add("link_deep11_16.conf");
+        configList.add("link_deep11_17.conf");
+        configList.add("link_deep11_18.conf");
+        configList.add("link_deep11_19.conf");
+
+        configList.add("link_deep12_16.conf");
+        configList.add("link_deep12_17.conf");
+        configList.add("link_deep12_18.conf");
+        configList.add("link_deep12_19.conf");
+        configList.add("link_deep13_16.conf");
+        configList.add("link_deep13_17.conf");
+        configList.add("link_deep13_18.conf");
+        configList.add("link_deep13_19.conf");
+
+        configList.add("link_deep14_16.conf");
+        configList.add("link_deep14_17.conf");
+        configList.add("link_deep14_18.conf");
+        configList.add("link_deep14_19.conf");
+
+        configList.add("link_deep15_16.conf");
+        configList.add("link_deep15_17.conf");
+        configList.add("link_deep15_18.conf");
+        configList.add("link_deep15_19.conf");
+    }
+
+    private static final String[] cmd = {
+            "/bin/sh",
+            "-c",
+            "jps -l| grep logstash|wc -l"
+    };
+
+    private static final String[] cmdByName(String configName) {
+        String startName = "/home/minrui1/bin/logstash -f /home/minrui1/" + configName + " > /data1/logs/link_deep0.log 2>&1 &";
+        String[] arrs = {"/bin/sh", "-c", startName};
+        return arrs;
+    }
+
+    ;
+
+    @Scheduled(cron = "0 0/1 * * * *")
+    public void plusOne() {
+        plus();
+    }
+
+    private void plus() {
+        log.info("启动：{}",new Date());
+        //1.判断进程是否存在
+        Process p = null;
+        try {
+            p = Runtime.getRuntime().exec(cmd);
+            if (p.isAlive()) {
+                InputStream inputStream = p.getInputStream();
+                String s = IOUtils.toString(inputStream);
+                log.info("accept str is {}",s);
+                if(StringUtils.isEmpty(s)||s.matches("       0\n")||s.matches("0\n")||s.matches("0")){
+                    //2.不存在的话新起一个服务
+                    int configPos = CronService.configPos.getAndAdd(1);
+                    if (configPos < configList.size()) {
+                        String configName = configList.get(configPos);
+                        log.info("进程已经死亡,i need start a new one,now config name is {}", configName);
+                        String[] cmdArr = cmdByName(configName);
+                        Runtime.getRuntime().exec(cmdArr);
+                        log.info("已经执行", configName);
+                    } else {
+                        log.info("success done!");
+                    }
+                } else {
+                    log.info("进程还活着，do nothing～");
+                }
+            }
+        } catch (Exception e) {
+            log.error("error happen", e);
+        }
+    }
+}
