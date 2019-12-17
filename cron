@@ -154,4 +154,20 @@ public class CronService {
             log.error("error happen", e);
         }
     }
+
+/***
+filter {
+    json {
+        source => "message"
+    }
+    ruby {
+       code => "
+               event.set('date', event.get('date').time.localtime.strftime('%Y-%m-%d'))
+               event.set('create_time', event.get('create_time').time.localtime.strftime('%Y-%m-%d %H:%M:%S'))
+               event.set('modify_time', event.get('modify_time').time.localtime.strftime('%Y-%m-%d %H:%M:%S'))
+               event.set('id', event.get('date').time.localtime.strftime('%Y%m%d')+event.get('deeplink_id')+event.get('app_id'))
+    "
+    }
+}
+****/
 }
